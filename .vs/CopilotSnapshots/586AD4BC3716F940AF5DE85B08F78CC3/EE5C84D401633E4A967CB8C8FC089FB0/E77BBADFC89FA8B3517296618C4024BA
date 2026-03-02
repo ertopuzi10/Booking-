@@ -1,0 +1,55 @@
+﻿using MediatR;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Booking.Application.Common.Interfaces;
+using Booking.Infrastructure.Contracts.AuthService;
+
+namespace Booking.Application.Features.Users.Login
+{
+    public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, LoginUserResponse>
+    {
+        private readonly IApplicationDbContext _context;
+        private readonly IAuthManager _authManager;
+
+        public LoginUserCommandHandler(IApplicationDbContext context, IAuthManager authManager)
+        {
+            _context = context;
+            _authManager = authManager;
+        }
+
+        public async Task<LoginUserResponse> Handle(LoginUserCommand request, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email))
+                throw new ArgumentException("Email is required");
+            if (string.IsNullOrWhiteSpace(request.Password))
+                throw new ArgumentException("Password is required");
+
+            // Find user by email
+            var user = _context.UsersQuery.FirstOrDefault(u => u.Email == request.Email);
+            if (user == null)
+                throw new InvalidOperationException("Invalid email or password");
+
+            // Verify password
+            if (!_authManager.VerifyPassword(request.Password, user.Password))
+                throw new InvalidOperationException("Invalid email or password");
+
+            // Check if user is active
+            if (!user.IsActive)
+                throw new InvalidOperationException("User account is inactive");
+
+            // Generate JWT token
+            var token = _authManager.GenerateJwtToken(user.Id, user.Email, user.FirstName, user.LastName);
+
+            return await Task.FromResult(new LoginUserResponse
+            {
+                UserId = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Token = token
+            });
+        }
+    }
+}

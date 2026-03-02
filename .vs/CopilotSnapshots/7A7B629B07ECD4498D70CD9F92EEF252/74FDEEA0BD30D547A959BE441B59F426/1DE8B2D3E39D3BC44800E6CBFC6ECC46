@@ -1,0 +1,152 @@
+﻿using Booking.Domain.Entities;
+using Booking.Application.Common.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Booking.Infrastructure.Persistence
+{
+    public class BookingDbContext : DbContext, IApplicationDbContext
+    {
+        public BookingDbContext(DbContextOptions<BookingDbContext> options)
+            : base(options) { }
+
+        public DbSet<Users> Users { get; set; }
+        public DbSet<Bookings> Bookings { get; set; }
+        public DbSet<Properties> Properties { get; set; }
+        public DbSet<Addresses> Addresses { get; set; }
+        public DbSet<Reviews> Reviews { get; set; }
+        public DbSet<Roles> Roles { get; set; }
+        public DbSet<UserRoles> UserRoles { get; set; }
+        public DbSet<OwnerProfiles> OwnerProfiles { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Users Configuration
+            modelBuilder.Entity<Users>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+                entity.HasIndex(e => e.Email).IsUnique();
+                entity.Property(e => e.Password).IsRequired();
+            });
+
+            // Addresses Configuration
+            modelBuilder.Entity<Addresses>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Country).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.City).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Street).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.PostalCode).IsRequired().HasMaxLength(20);
+            });
+
+            // Properties Configuration
+            modelBuilder.Entity<Properties>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Description).IsRequired();
+                entity.Property(e => e.PropertyType).IsRequired().HasMaxLength(50);
+
+                // Relationship: Property -> Owner (User)
+                entity.HasOne(e => e.Owner)
+                    .WithMany(u => u.Properties)
+                    .HasForeignKey(e => e.OwnerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Relationship: Property -> Address
+                entity.HasOne(e => e.Address)
+                    .WithMany(a => a.Properties)
+                    .HasForeignKey(e => e.AddressId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Bookings Configuration
+            modelBuilder.Entity<Bookings>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.BookingStatus).HasMaxLength(50).HasDefaultValue("Pending");
+                entity.Property(e => e.TotalPrice).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.CleaningFee).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.AmenitiesUpCharge).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.PriceForPeriod).HasColumnType("decimal(18,2)");
+
+                // Relationship: Booking -> Property
+                entity.HasOne(e => e.Property)
+                    .WithMany(p => p.Bookings)
+                    .HasForeignKey(e => e.PropertyId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Relationship: Booking -> Guest (User)
+                entity.HasOne(e => e.Guest)
+                    .WithMany(u => u.Bookings)
+                    .HasForeignKey(e => e.GuestId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Reviews Configuration
+            modelBuilder.Entity<Reviews>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Rating).IsRequired();
+                entity.Property(e => e.Comment);
+
+                // Relationship: Review -> Booking
+                entity.HasOne(e => e.Booking)
+                    .WithMany(b => b.Reviews)
+                    .HasForeignKey(e => e.BookingId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                // Relationship: Review -> Guest (User)
+                entity.HasOne(e => e.Guest)
+                    .WithMany(u => u.Reviews)
+                    .HasForeignKey(e => e.GuestId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Roles Configuration
+            modelBuilder.Entity<Roles>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
+                entity.HasIndex(e => e.Name).IsUnique();
+            });
+
+            // UserRoles Configuration (Many-to-Many between Users and Roles)
+            modelBuilder.Entity<UserRoles>(entity =>
+            {
+                entity.HasKey(e => new { e.UserId, e.RoleId });
+
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.UserRoles)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Role)
+                    .WithMany(r => r.UserRoles)
+                    .HasForeignKey(e => e.RoleId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // OwnerProfiles Configuration
+            modelBuilder.Entity<OwnerProfiles>(entity =>
+            {
+                entity.HasKey(e => e.UserId);
+                entity.Property(e => e.IdentityCardNumber).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.BusinessName).HasMaxLength(255);
+                entity.Property(e => e.CreditCard).HasMaxLength(50);
+
+                entity.HasOne(e => e.User)
+                    .WithOne(u => u.OwnerProfile)
+                    .HasForeignKey<OwnerProfiles>(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+        }
+    }
+}
