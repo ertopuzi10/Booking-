@@ -10,8 +10,10 @@ namespace Booking.Application.Common.Interfaces
         IQueryable<Users> UsersQuery { get; }
         IQueryable<Roles> RolesQuery { get; }
         IQueryable<UserRoles> UserRolesQuery { get; }
+        IQueryable<Properties> PropertiesQuery { get; }
 
         void Add<TEntity>(TEntity entity) where TEntity : class;
+        void Remove<TEntity>(TEntity entity) where TEntity : class;
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }

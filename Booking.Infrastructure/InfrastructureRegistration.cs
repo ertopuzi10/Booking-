@@ -1,6 +1,8 @@
+using Booking.Application.Abstractions;
 using Booking.Application.Common.Interfaces;
 using Booking.Infrastructure.Contracts.AuthService;
 using Booking.Infrastructure.Persistence;
+using Booking.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +28,10 @@ namespace Booking.Infrastructure
 
             services.AddScoped<IAuthManager>(_ =>
                 new AuthManager(jwtSecret, jwtIssuer, jwtAudience, jwtExpiryMinutes));
+
+            // Repositories
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IPropertyRepository, PropertyRepository>();
 
             return services;
         }

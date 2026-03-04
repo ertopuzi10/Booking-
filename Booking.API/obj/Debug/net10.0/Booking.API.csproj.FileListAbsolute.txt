@@ -170,3 +170,4 @@ C:\Users\User\source\repos\Booking\Booking.API\obj\Debug\net10.0\refint\Booking.
 C:\Users\User\source\repos\Booking\Booking.API\obj\Debug\net10.0\Booking.API.pdb
 C:\Users\User\source\repos\Booking\Booking.API\obj\Debug\net10.0\Booking.API.genruntimeconfig.cache
 C:\Users\User\source\repos\Booking\Booking.API\obj\Debug\net10.0\ref\Booking.API.dll
+C:\Users\User\source\repos\Booking\Booking.API\obj\Debug\net10.0\Booking.API.sourcelink.json

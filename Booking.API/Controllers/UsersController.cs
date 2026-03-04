@@ -1,5 +1,6 @@
 using Booking.Application.Features.Users.Register;
 using Booking.Application.Features.Users.Login;
+using Booking.Application.Features.Users.GetAll;
 using Booking.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,13 @@ namespace Booking.API.Controllers
         public UsersController(IMediator mediator)
         {
             _mediator = mediator;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var users = await _mediator.Send(new GetAllUsersQuery());
+            return Ok(users);
         }
 
         [HttpPost("register")]

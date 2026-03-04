@@ -17,3 +17,4 @@ C:\Users\User\source\repos\Booking\Booking.Infrastructure\obj\Debug\net10.0\refi
 C:\Users\User\source\repos\Booking\Booking.Infrastructure\obj\Debug\net10.0\Booking.Infrastructure.pdb
 C:\Users\User\source\repos\Booking\Booking.Infrastructure\obj\Debug\net10.0\Booking.Infrastructure.genruntimeconfig.cache
 C:\Users\User\source\repos\Booking\Booking.Infrastructure\obj\Debug\net10.0\ref\Booking.Infrastructure.dll
+C:\Users\User\source\repos\Booking\Booking.Infrastructure\obj\Debug\net10.0\Booking.Infrastructure.sourcelink.json

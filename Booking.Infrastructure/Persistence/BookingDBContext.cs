@@ -1,4 +1,4 @@
-﻿using Booking.Domain.Entities;
+using Booking.Domain.Entities;
 using Booking.Application.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -153,8 +153,11 @@ namespace Booking.Infrastructure.Persistence
         IQueryable<Users> Booking.Application.Common.Interfaces.IApplicationDbContext.UsersQuery => Users;
         IQueryable<Roles> Booking.Application.Common.Interfaces.IApplicationDbContext.RolesQuery => Roles;
         IQueryable<UserRoles> Booking.Application.Common.Interfaces.IApplicationDbContext.UserRolesQuery => UserRoles;
+        IQueryable<Properties> Booking.Application.Common.Interfaces.IApplicationDbContext.PropertiesQuery => Properties;
 
         void Booking.Application.Common.Interfaces.IApplicationDbContext.Add<TEntity>(TEntity entity) => Set<TEntity>().Add(entity!);
+
+        void Booking.Application.Common.Interfaces.IApplicationDbContext.Remove<TEntity>(TEntity entity) => Set<TEntity>().Remove(entity!);
 
         Task<int> Booking.Application.Common.Interfaces.IApplicationDbContext.SaveChangesAsync(System.Threading.CancellationToken cancellationToken) => base.SaveChangesAsync(cancellationToken);
     }
