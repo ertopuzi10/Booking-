@@ -1250,7 +1250,10 @@
         },
         "runtime": {
           "bin/placeholder/Booking.Infrastructure.dll": {}
-        }
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
       }
     }
   },

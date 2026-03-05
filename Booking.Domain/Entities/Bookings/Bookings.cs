@@ -35,3 +35,12 @@ namespace Booking.Domain.Entities
         public ICollection<Reviews> Reviews { get; set; } = new List<Reviews>();
     }
 }
+
+public enum BookingStatus
+{
+    Pending = 0,
+    Confirmed = 1,
+    Rejected = 2,
+    Completed = 3,
+    Cancelled = 4
+}

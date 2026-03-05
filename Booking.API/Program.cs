@@ -1,6 +1,8 @@
 using Booking.Infrastructure.Persistence;
 using Booking.Infrastructure;
+using Booking.Infrastructure.Services;
 using Booking.Application.Features.Users.Register;
+using Booking.Application.Services;
 using Booking.API.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -17,6 +19,10 @@ var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "your-secret-key-must-be-
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "BookingAPI";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "BookingAPIClient";
 var jwtExpiryMinutes = int.Parse(builder.Configuration["Jwt:ExpiryMinutes"] ?? "60");
+
+// HttpContext access (for current user from JWT)
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 //services
 builder.Services.AddControllers();

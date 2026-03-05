@@ -7,7 +7,7 @@ namespace Booking.Domain.Entities
         public int Id { get; set; }
 
         public int BookingId { get; set; }
-        public Bookings Booking { get; set; } = null!;
+        public Bookings Bookings { get; set; } = null!;
 
         public int GuestId { get; set; }
         public Users Guest { get; set; } = null!;

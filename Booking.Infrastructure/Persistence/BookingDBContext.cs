@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System.Threading;
 using System.Threading.Tasks;
+using Booking.Domain.Enums;
 
 namespace Booking.Infrastructure.Persistence
 {
@@ -98,7 +99,7 @@ namespace Booking.Infrastructure.Persistence
                 entity.Property(e => e.Comment);
 
                 // Relationship: Review -> Booking
-                entity.HasOne(e => e.Booking)
+                entity.HasOne(e => e.Bookings)
                     .WithMany(b => b.Reviews)
                     .HasForeignKey(e => e.BookingId)
                     .OnDelete(DeleteBehavior.Cascade);

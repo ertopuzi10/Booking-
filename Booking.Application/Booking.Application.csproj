@@ -16,6 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Features\Bookings\Commands\" />
+    <Folder Include="Features\Bookings\Queries\" />
     <Folder Include="Features\Properties\" />
   </ItemGroup>
 

@@ -1,4 +1,5 @@
 ﻿using Booking.Domain.Entities;
+using Booking.Domain.Enums;
 using Booking.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
