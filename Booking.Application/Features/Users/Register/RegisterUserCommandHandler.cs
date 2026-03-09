@@ -25,26 +25,20 @@ namespace Booking.Application.Features.Users.Register
                 throw new ArgumentException("Email is required");
             if (string.IsNullOrWhiteSpace(request.Password))
                 throw new ArgumentException("Password is required");
+            if (string.IsNullOrWhiteSpace(request.Username))
+                throw new ArgumentException("Username is required");
+            if (string.IsNullOrWhiteSpace(request.FirstName))
+                throw new ArgumentException("First name is required");
+            if (string.IsNullOrWhiteSpace(request.LastName))
+                throw new ArgumentException("Last name is required");
 
-            // Check existing user
-            var exists = _context.UsersQuery.Any(u => u.Email == request.Email);
-            if (exists)
+            var emailExists = _context.UsersQuery.Any(u => u.Email == request.Email);
+            if (emailExists)
                 throw new InvalidOperationException("Email already registered");
 
-            // ckeck if roles exist
-            var userRole = _context.RolesQuery.FirstOrDefault(r => r.Name == "User");
-            if (userRole == null)
-            {
-                userRole = new Roles { Name = "User", Description = "Default user role", IsDefault = true };
-                _context.Add(userRole);
-            }
-
-            var adminRole = _context.RolesQuery.FirstOrDefault(r => r.Name == "Admin");
-            if (adminRole == null)
-            {
-                adminRole = new Roles { Name = "Admin", Description = "Administrator role", IsDefault = false };
-                _context.Add(adminRole);
-            }
+            var usernameExists = _context.UsersQuery.Any(u => u.Username == request.Username);
+            if (usernameExists)
+                throw new InvalidOperationException("Username already taken");
 
             string Hash(string input)
             {
@@ -54,34 +48,32 @@ namespace Booking.Application.Features.Users.Register
                 return Convert.ToHexString(hash);
             }
 
-            var user = new global::Booking.Domain.Entities.Users
+            var user = new Booking.Domain.Entities.Users
             {
                 FirstName = request.FirstName,
                 LastName = request.LastName,
+                Username = request.Username,
                 Email = request.Email,
                 Password = Hash(request.Password),
+                PhoneNumber = request.PhoneNumber,
                 IsActive = true,
+                IsSuspended = false,
                 CreatedAt = DateTime.UtcNow,
                 LastModifiedAt = DateTime.UtcNow
             };
 
             _context.Add(user);
-
             await _context.SaveChangesAsync(cancellationToken);
 
-            var roleToAssign = request.IsAdmin ? adminRole : userRole;
-            var trackedRole = _context.RolesQuery.FirstOrDefault(r => r.Name == roleToAssign.Name);
-            if (trackedRole == null)
-            {
-                trackedRole = roleToAssign;
-                _context.Add(trackedRole);
-                await _context.SaveChangesAsync(cancellationToken);
-            }
+            // Assign default "Guest" role
+            var guestRole = _context.RolesQuery.FirstOrDefault(r => r.Name == "Guest");
+            if (guestRole == null)
+                throw new InvalidOperationException("Guest role not found. Please ensure roles are seeded.");
 
             var userRoleEntry = new UserRoles
             {
                 UserId = user.Id,
-                RoleId = trackedRole.Id,
+                RoleId = guestRole.Id,
                 AssignedAt = DateTime.UtcNow
             };
 

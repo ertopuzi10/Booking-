@@ -11,4 +11,3 @@ namespace Booking.Application.Features.Properties.Update
         public bool IsApproved { get; set; }
     }
 }
-

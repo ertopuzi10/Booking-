@@ -12,7 +12,9 @@ namespace Booking.Domain.Entities
         public string Password { get; set; } = null!;
         public string? PhoneNumber { get; set; }
         public string? ProfileImageUrl { get; set; }
+        public string Username { get; set; } = null!;
         public bool IsActive { get; set; } = true;
+        public bool IsSuspended { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime LastModifiedAt { get; set; } = DateTime.UtcNow;
 

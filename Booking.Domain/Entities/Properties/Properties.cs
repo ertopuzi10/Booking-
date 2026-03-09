@@ -21,6 +21,11 @@ namespace Booking.Domain.Entities
         public TimeSpan CheckInTime { get; set; }
         public TimeSpan CheckOutTime { get; set; }
 
+        public decimal PricePerNight { get; set; }
+        public string? Rules { get; set; }
+        public int MinStayNights { get; set; } = 1;
+        public int? MaxStayNights { get; set; }
+
         public bool IsActive { get; set; } = true;
         public bool IsApproved { get; set; } = false;
 
@@ -30,5 +35,9 @@ namespace Booking.Domain.Entities
 
         // Navigation properties
         public ICollection<Bookings> Bookings { get; set; } = new List<Bookings>();
+        public ICollection<PropertyAmenity> Amenities { get; set; } = new List<PropertyAmenity>();
+        public ICollection<PropertyPhoto> Photos { get; set; } = new List<PropertyPhoto>();
+        public ICollection<PropertyAvailability> BlockedDates { get; set; } = new List<PropertyAvailability>();
+        public ICollection<PropertySeasonalPrice> SeasonalPrices { get; set; } = new List<PropertySeasonalPrice>();
     }
 }

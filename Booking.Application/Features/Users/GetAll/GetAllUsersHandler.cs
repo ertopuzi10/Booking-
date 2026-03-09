@@ -24,8 +24,10 @@ namespace Booking.Application.Features.Users.GetAll
                     Id = u.Id,
                     FirstName = u.FirstName,
                     LastName = u.LastName,
+                    Username = u.Username,
                     Email = u.Email,
-                    IsActive = u.IsActive
+                    IsActive = u.IsActive,
+                    IsSuspended = u.IsSuspended
                 })
                 .ToList();
 
@@ -33,4 +35,3 @@ namespace Booking.Application.Features.Users.GetAll
         }
     }
 }
-

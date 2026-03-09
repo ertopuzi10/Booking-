@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
@@ -32,20 +33,27 @@ namespace Booking.Infrastructure.Contracts.AuthService
             return computedHashString == hash;
         }
 
-        public string GenerateJwtToken(int userId, string email, string firstName, string lastName)
+        public string GenerateJwtToken(int userId, string email, string firstName, string lastName, IEnumerable<string> roles)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_jwtSecret);
 
+            var claims = new System.Collections.Generic.List<Claim>
+            {
+                new Claim("id", userId.ToString()),
+                new Claim("email", email),
+                new Claim("firstName", firstName),
+                new Claim("lastName", lastName)
+            };
+
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new System.Security.Claims.ClaimsIdentity(new[]
-                {
-                    new System.Security.Claims.Claim("id", userId.ToString()),
-                    new System.Security.Claims.Claim("email", email),
-                    new System.Security.Claims.Claim("firstName", firstName),
-                    new System.Security.Claims.Claim("lastName", lastName)
-                }),
+                Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.UtcNow.AddMinutes(_jwtExpiryMinutes),
                 Issuer = _jwtIssuer,
                 Audience = _jwtAudience,

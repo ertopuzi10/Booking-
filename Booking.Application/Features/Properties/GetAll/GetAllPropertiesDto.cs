@@ -11,6 +11,7 @@ namespace Booking.Application.Features.Properties.GetAll
         public int MaxGuests { get; init; }
         public bool IsActive { get; init; }
         public bool IsApproved { get; init; }
+        public decimal PricePerNight { get; init; }
+        public double? AverageRating { get; init; }
     }
 }
-

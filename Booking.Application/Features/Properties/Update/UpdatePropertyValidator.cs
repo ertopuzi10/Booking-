@@ -22,4 +22,3 @@ namespace Booking.Application.Features.Properties.Update
         }
     }
 }
-

@@ -1,5 +1,6 @@
-﻿using MediatR;
+using MediatR;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,20 +26,25 @@ namespace Booking.Application.Features.Users.Login
             if (string.IsNullOrWhiteSpace(request.Password))
                 throw new ArgumentException("Password is required");
 
-            // checking users by email
             var user = _context.UsersQuery.FirstOrDefault(u => u.Email == request.Email);
             if (user == null)
                 throw new InvalidOperationException("Invalid email or password");
 
-            // password verify
             if (!_authManager.VerifyPassword(request.Password, user.Password))
                 throw new InvalidOperationException("Invalid email or password");
 
-            // Checking activity
             if (!user.IsActive)
                 throw new InvalidOperationException("User account is inactive");
 
-            var token = _authManager.GenerateJwtToken(user.Id, user.Email, user.FirstName, user.LastName);
+            if (user.IsSuspended)
+                throw new InvalidOperationException("User account is suspended");
+
+            var roles = _context.UserRolesQuery
+                .Where(ur => ur.UserId == user.Id)
+                .Select(ur => ur.Role.Name)
+                .ToList();
+
+            var token = _authManager.GenerateJwtToken(user.Id, user.Email, user.FirstName, user.LastName, roles);
 
             return await Task.FromResult(new LoginUserResponse
             {
@@ -46,7 +52,8 @@ namespace Booking.Application.Features.Users.Login
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Token = token
+                Token = token,
+                Roles = roles
             });
         }
     }

@@ -1,5 +1,8 @@
-using Booking.Application.Abstractions;
+using Booking.Application.Common.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,21 +10,31 @@ namespace Booking.Application.Features.Properties.GetById
 {
     public class GetPropertyByIdHandler : IRequestHandler<GetPropertyByIdQuery, GetPropertyByIdDto>
     {
-        private readonly IPropertyRepository _repository;
+        private readonly IApplicationDbContext _context;
 
-        public GetPropertyByIdHandler(IPropertyRepository repository)
+        public GetPropertyByIdHandler(IApplicationDbContext context)
         {
-            _repository = repository;
+            _context = context;
         }
 
         public async Task<GetPropertyByIdDto> Handle(GetPropertyByIdQuery request, CancellationToken cancellationToken)
         {
-            var property = await _repository.GetByIdAsync(request.Id, cancellationToken);
+            var property = await _context.PropertiesQuery
+                .Include(p => p.Address)
+                .Include(p => p.Amenities)
+                .Include(p => p.Photos)
+                .Include(p => p.Bookings)
+                    .ThenInclude(b => b.Reviews)
+                .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
 
             if (property == null)
-            {
                 throw new KeyNotFoundException($"Property with id {request.Id} not found.");
-            }
+
+            var allReviews = property.Bookings.SelectMany(b => b.Reviews).ToList();
+            double? avgRating = allReviews.Any() ? allReviews.Average(r => r.Rating) : null;
+
+            var amenityNames = property.Amenities.Select(a => a.Name).ToList();
+            var photoUrls = property.Photos.OrderBy(p => p.DisplayOrder).Select(p => p.Url).ToList();
 
             return new GetPropertyByIdDto
             {
@@ -32,10 +45,21 @@ namespace Booking.Application.Features.Properties.GetById
                 PropertyType = property.PropertyType,
                 AddressId = property.AddressId,
                 MaxGuests = property.MaxGuests,
+                CheckInTime = property.CheckInTime,
+                CheckOutTime = property.CheckOutTime,
+                PricePerNight = property.PricePerNight,
+                Rules = property.Rules,
+                MinStayNights = property.MinStayNights,
+                MaxStayNights = property.MaxStayNights,
                 IsActive = property.IsActive,
-                IsApproved = property.IsApproved
+                IsApproved = property.IsApproved,
+                AddressCity = property.Address?.City,
+                AddressCountry = property.Address?.Country,
+                AddressStreet = property.Address?.Street,
+                AmenityNames = amenityNames,
+                PhotoUrls = photoUrls,
+                AverageRating = avgRating
             };
         }
     }
 }
-

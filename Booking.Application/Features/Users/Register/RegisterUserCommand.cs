@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 
 namespace Booking.Application.Features.Users.Register
@@ -7,8 +7,9 @@ namespace Booking.Application.Features.Users.Register
     {
         public string FirstName { get; set; } = null!;
         public string LastName { get; set; } = null!;
+        public string Username { get; set; } = null!;
         public string Email { get; set; } = null!;
         public string Password { get; set; } = null!;
-        public bool IsAdmin { get; set; } = false;
+        public string? PhoneNumber { get; set; }
     }
 }

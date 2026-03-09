@@ -10,4 +10,3 @@ namespace Booking.Application.Features.Properties.Create
         public int MaxGuests { get; set; }
     }
 }
-

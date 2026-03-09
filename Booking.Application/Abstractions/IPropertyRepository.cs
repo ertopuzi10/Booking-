@@ -3,6 +3,7 @@ namespace Booking.Application.Abstractions
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
+    using Booking.Application.Features.Properties.Search;
     using Booking.Domain.Entities;
 
     public interface IPropertyRepository
@@ -12,5 +13,6 @@ namespace Booking.Application.Abstractions
         Task AddAsync(Properties property, CancellationToken cancellationToken);
         Task UpdateAsync(Properties property, CancellationToken cancellationToken);
         Task DeleteAsync(Properties property, CancellationToken cancellationToken);
+        Task<List<SearchPropertiesDto>> SearchAsync(SearchPropertiesQuery query, CancellationToken cancellationToken);
     }
 }

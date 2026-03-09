@@ -1,4 +1,4 @@
-using Booking.Application.Abstractions;
+using Booking.Application.Common.Interfaces;
 using MediatR;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,18 +9,16 @@ namespace Booking.Application.Features.Properties.GetAll
 {
     public class GetAllPropertiesHandler : IRequestHandler<GetAllPropertiesQuery, List<GetAllPropertiesDto>>
     {
-        private readonly IPropertyRepository _repository;
+        private readonly IApplicationDbContext _context;
 
-        public GetAllPropertiesHandler(IPropertyRepository repository)
+        public GetAllPropertiesHandler(IApplicationDbContext context)
         {
-            _repository = repository;
+            _context = context;
         }
 
-        public async Task<List<GetAllPropertiesDto>> Handle(GetAllPropertiesQuery request, CancellationToken cancellationToken)
+        public Task<List<GetAllPropertiesDto>> Handle(GetAllPropertiesQuery request, CancellationToken cancellationToken)
         {
-            var properties = await _repository.GetAllAsync(cancellationToken);
-
-            return properties
+            var properties = _context.PropertiesQuery
                 .Select(p => new GetAllPropertiesDto
                 {
                     Id = p.Id,
@@ -31,10 +29,19 @@ namespace Booking.Application.Features.Properties.GetAll
                     AddressId = p.AddressId,
                     MaxGuests = p.MaxGuests,
                     IsActive = p.IsActive,
-                    IsApproved = p.IsApproved
+                    IsApproved = p.IsApproved,
+                    PricePerNight = p.PricePerNight,
+                    AverageRating = p.Bookings
+                        .SelectMany(b => b.Reviews)
+                        .Any()
+                        ? (double?)p.Bookings
+                            .SelectMany(b => b.Reviews)
+                            .Average(r => r.Rating)
+                        : null
                 })
                 .ToList();
+
+            return Task.FromResult(properties);
         }
     }
 }
-
