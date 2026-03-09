@@ -1,25 +1,28 @@
+using Booking.Application.Common.Interfaces;
+using Booking.Domain.Entities;
 using MediatR;
 using System;
+using System.Data;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Booking.Application.Common.Interfaces;
-using Booking.Domain.Entities;
 
 namespace Booking.Application.Features.Users.Register
 {
-    public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, int>
+    public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, RegisterUserResponse>
     {
         private readonly IApplicationDbContext _context;
+        private readonly IAuthManager _authManager;
 
-        public RegisterUserCommandHandler(IApplicationDbContext context)
+        public RegisterUserCommandHandler(IApplicationDbContext context, IAuthManager authManager)
         {
             _context = context;
+            _authManager = authManager;
         }
 
-        public async Task<int> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
+        public async Task<RegisterUserResponse> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(request.Email))
                 throw new ArgumentException("Email is required");
@@ -80,7 +83,16 @@ namespace Booking.Application.Features.Users.Register
             _context.Add(userRoleEntry);
             await _context.SaveChangesAsync(cancellationToken);
 
-            return user.Id;
+            // Generate JWT token
+            var token = _authManager.GenerateJwtToken(user.Id, user.Email, user.FirstName, user.LastName, new[] { guestRole.Name });
+
+            return new RegisterUserResponse
+            {
+                UserId = user.Id,
+                Email = user.Email,
+                Username = user.Username,
+                Token = token
+            };
         }
     }
 }
