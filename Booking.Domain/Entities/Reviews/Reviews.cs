@@ -9,6 +9,9 @@ namespace Booking.Domain.Entities
         public int BookingId { get; set; }
         public Bookings Bookings { get; set; } = null!;
 
+        public int PropertyId { get; set; }
+        public Properties Property { get; set; } = null!;
+
         public int GuestId { get; set; }
         public Users Guest { get; set; } = null!;
 

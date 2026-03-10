@@ -3,6 +3,15 @@ using System.Collections.Generic;
 
 namespace Booking.Application.Features.Properties.GetById
 {
+    public class PropertyReviewDto
+    {
+        public int Id { get; init; }
+        public string GuestFullName { get; init; } = string.Empty;
+        public int Rating { get; init; }
+        public string? Comment { get; init; }
+        public DateTime CreatedAt { get; init; }
+    }
+
     public class GetPropertyByIdDto
     {
         public int Id { get; init; }
@@ -25,6 +34,14 @@ namespace Booking.Application.Features.Properties.GetById
         public string? AddressStreet { get; init; }
         public List<string> AmenityNames { get; init; } = new List<string>();
         public List<string> PhotoUrls { get; init; } = new List<string>();
-        public double? AverageRating { get; init; }
+        public decimal? AverageRating { get; init; }
+        public List<PropertyReviewDto> Reviews { get; init; } = new List<PropertyReviewDto>();
+
+        // Pricing rules — full breakdown so callers can preview costs before booking
+        public decimal CleaningFee { get; init; }
+        public decimal ExtraGuestFeePerNight { get; init; }
+        public int BaseGuestsIncluded { get; init; }
+        public decimal ServiceFeePercent { get; init; }
+        public decimal TaxPercent { get; init; }
     }
 }

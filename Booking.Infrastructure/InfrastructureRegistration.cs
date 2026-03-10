@@ -33,6 +33,7 @@ namespace Booking.Infrastructure
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IPropertyRepository, PropertyRepository>();
             services.AddScoped<IPropertyAvailabilityRepository, PropertyAvailabilityRepository>();
+            services.AddScoped<IBookingRepository, BookingRepository>();
 
             return services;
         }

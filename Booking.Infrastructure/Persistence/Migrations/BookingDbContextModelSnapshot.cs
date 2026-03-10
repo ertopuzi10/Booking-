@@ -73,6 +73,9 @@ namespace Booking.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)")
                         .HasDefaultValue("Pending");
 
+                    b.Property<string>("CancellationReason")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("CancelledOnUtc")
                         .HasColumnType("datetime2");
 
@@ -88,10 +91,10 @@ namespace Booking.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("CreatedOnUtc")
+                    b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("EndDate")
+                    b.Property<DateTime?>("ExpiredOnUtc")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("GuestCount")
@@ -112,8 +115,14 @@ namespace Booking.Infrastructure.Migrations
                     b.Property<DateTime?>("RejectedOnUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<decimal>("ServiceFee")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(18,2)");
@@ -170,11 +179,24 @@ namespace Booking.Infrastructure.Migrations
                     b.Property<int>("AddressId")
                         .HasColumnType("int");
 
+                    b.Property<decimal?>("AverageRating")
+                        .HasColumnType("decimal(3,2)");
+
+                    b.Property<int>("BaseGuestsIncluded")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(2);
+
                     b.Property<TimeSpan>("CheckInTime")
                         .HasColumnType("time");
 
                     b.Property<TimeSpan>("CheckOutTime")
                         .HasColumnType("time");
+
+                    b.Property<decimal>("CleaningFee")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(18,2)")
+                        .HasDefaultValue(0m);
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -182,6 +204,11 @@ namespace Booking.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("ExtraGuestFeePerNight")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(18,2)")
+                        .HasDefaultValue(0m);
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -224,6 +251,16 @@ namespace Booking.Infrastructure.Migrations
 
                     b.Property<string>("Rules")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("ServiceFeePercent")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(5,4)")
+                        .HasDefaultValue(0.10m);
+
+                    b.Property<decimal>("TaxPercent")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(5,4)")
+                        .HasDefaultValue(0.085m);
 
                     b.HasKey("Id");
 
@@ -353,14 +390,20 @@ namespace Booking.Infrastructure.Migrations
                     b.Property<int>("GuestId")
                         .HasColumnType("int");
 
+                    b.Property<int>("PropertyId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Rating")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BookingId");
+                    b.HasIndex("BookingId")
+                        .IsUnique();
 
                     b.HasIndex("GuestId");
+
+                    b.HasIndex("PropertyId");
 
                     b.ToTable("Reviews");
                 });
@@ -603,9 +646,17 @@ namespace Booking.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Booking.Domain.Entities.Properties", "Property")
+                        .WithMany("Reviews")
+                        .HasForeignKey("PropertyId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.Navigation("Bookings");
 
                     b.Navigation("Guest");
+
+                    b.Navigation("Property");
                 });
 
             modelBuilder.Entity("Booking.Domain.Entities.UserRoles", b =>
@@ -646,6 +697,8 @@ namespace Booking.Infrastructure.Migrations
                     b.Navigation("Bookings");
 
                     b.Navigation("Photos");
+
+                    b.Navigation("Reviews");
 
                     b.Navigation("SeasonalPrices");
                 });

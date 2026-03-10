@@ -1,96 +1,87 @@
-﻿using Booking.Domain.Entities;
-using Booking.Domain.Enums;
-using Booking.Infrastructure.Persistence;
+using Booking.Application.Features.Bookings.Commands.CancelBooking;
+using Booking.Application.Features.Bookings.Commands.ConfirmBooking;
+using Booking.Application.Features.Bookings.Commands.CreateBooking;
+using Booking.Application.Features.Bookings.Commands.RejectBooking;
+using Booking.Application.Features.Bookings.Queries.GetBookingById;
+using Booking.Application.Features.Bookings.Queries.GetBookingHistory;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Booking.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class BookingsController : ControllerBase
     {
-        private readonly BookingDbContext _context;
+        private readonly IMediator _mediator;
 
-        public BookingsController(BookingDbContext context)
+        public BookingsController(IMediator mediator)
         {
-            _context = context;
+            _mediator = mediator;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+ 
+        // Create a new booking where GuestId is read from the JWT token.
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateBookingCommand command)
         {
-            var bookings = await _context.Bookings
-                .Include(b => b.Property)
-                .Include(b => b.Guest)
-                .ToListAsync();
-            return Ok(bookings);
+            var id = await _mediator.Send(command);
+            return CreatedAtAction(nameof(GetById), new { id }, new { id });
         }
 
+        /// <summary>
+        /// Get details of a specific booking. Accessible by the guest or property owner.
+        /// </summary>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var booking = await _context.Bookings
-                .Include(b => b.Property)
-                .Include(b => b.Guest)
-                .FirstOrDefaultAsync(b => b.Id == id);
-
-            if (booking == null)
-                return NotFound();
-
-            return Ok(booking);
+            var result = await _mediator.Send(new GetBookingByIdQuery { BookingId = id });
+            return Ok(result);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Bookings booking)
+        // Get booking history for the current user (as guest or host).
+        [HttpGet("history")]
+        public async Task<IActionResult> GetHistory([FromQuery] string? status)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            _context.Bookings.Add(booking);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetById), new { id = booking.Id }, booking);
+            var result = await _mediator.Send(new GetBookingHistoryQuery { Status = status });
+            return Ok(result);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Bookings booking)
+        // Confirm a pending booking
+        [HttpPut("{id}/confirm")]
+        public async Task<IActionResult> Confirm(int id)
         {
-            if (id != booking.Id)
-                return BadRequest();
-
-            _context.Entry(booking).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!await BookingExists(id))
-                    return NotFound();
-                throw;
-            }
-
+            await _mediator.Send(new ConfirmBookingCommand { BookingId = id });
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        // Reject a pending booking
+        [HttpPut("{id}/reject")]
+        public async Task<IActionResult> Reject(int id, [FromBody] RejectBookingRequest request)
         {
-            var booking = await _context.Bookings.FindAsync(id);
-            if (booking == null)
-                return NotFound();
-
-            _context.Bookings.Remove(booking);
-            await _context.SaveChangesAsync();
-
+            await _mediator.Send(new RejectBookingCommand { BookingId = id, Reason = request.Reason });
             return NoContent();
         }
 
-        private async Task<bool> BookingExists(int id)
+        // Cancel a booking. Accessible by the guest or property owner.
+        // Returns the cancellation policy result including refund amount.
+        [HttpPut("{id}/cancel")]
+        public async Task<IActionResult> Cancel(int id, [FromBody] CancelBookingRequest request)
         {
-            return await _context.Bookings.AnyAsync(b => b.Id == id);
+            var result = await _mediator.Send(new CancelBookingCommand { BookingId = id, Reason = request.Reason });
+            return Ok(result);
         }
+    }
+
+    public class RejectBookingRequest
+    {
+        public string? Reason { get; set; }
+    }
+
+    public class CancelBookingRequest
+    {
+        public string? Reason { get; set; }
     }
 }

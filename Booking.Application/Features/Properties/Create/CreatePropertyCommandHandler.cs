@@ -35,6 +35,17 @@ namespace Booking.Application.Features.Properties.Create
             if (request.PricePerNight <= 0)
                 throw new ArgumentException("PricePerNight must be greater than zero.");
 
+            if (request.CleaningFee < 0)
+                throw new ArgumentException("CleaningFee cannot be negative.");
+            if (request.ExtraGuestFeePerNight < 0)
+                throw new ArgumentException("ExtraGuestFeePerNight cannot be negative.");
+            if (request.BaseGuestsIncluded < 1)
+                throw new ArgumentException("BaseGuestsIncluded must be at least 1.");
+            if (request.ServiceFeePercent < 0 || request.ServiceFeePercent > 1)
+                throw new ArgumentException("ServiceFeePercent must be between 0 and 1.");
+            if (request.TaxPercent < 0 || request.TaxPercent > 1)
+                throw new ArgumentException("TaxPercent must be between 0 and 1.");
+
             var property = new Domain.Entities.Properties
             {
                 OwnerId = _currentUserService.UserId.Value,
@@ -49,6 +60,11 @@ namespace Booking.Application.Features.Properties.Create
                 Rules = request.Rules,
                 MinStayNights = request.MinStayNights,
                 MaxStayNights = request.MaxStayNights,
+                CleaningFee = request.CleaningFee,
+                ExtraGuestFeePerNight = request.ExtraGuestFeePerNight,
+                BaseGuestsIncluded = request.BaseGuestsIncluded,
+                ServiceFeePercent = request.ServiceFeePercent,
+                TaxPercent = request.TaxPercent,
                 IsActive = true,
                 IsApproved = false,
                 CreatedAt = DateTime.UtcNow,

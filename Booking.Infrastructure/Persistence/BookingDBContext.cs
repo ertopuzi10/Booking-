@@ -61,6 +61,12 @@ namespace Booking.Infrastructure.Persistence
                 entity.Property(e => e.PropertyType).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.PricePerNight).HasColumnType("decimal(18,2)");
                 entity.Property(e => e.MinStayNights).HasDefaultValue(1);
+                entity.Property(e => e.CleaningFee).HasColumnType("decimal(18,2)").HasDefaultValue(0m);
+                entity.Property(e => e.ExtraGuestFeePerNight).HasColumnType("decimal(18,2)").HasDefaultValue(0m);
+                entity.Property(e => e.BaseGuestsIncluded).HasDefaultValue(2);
+                entity.Property(e => e.ServiceFeePercent).HasColumnType("decimal(5,4)").HasDefaultValue(0.10m);
+                entity.Property(e => e.TaxPercent).HasColumnType("decimal(5,4)").HasDefaultValue(0.085m);
+                entity.Property(e => e.AverageRating).HasColumnType("decimal(3,2)").IsRequired(false);
 
                 // Relationship: Property -> Owner (User)
                 entity.HasOne(e => e.Owner)
@@ -84,6 +90,8 @@ namespace Booking.Infrastructure.Persistence
                 entity.Property(e => e.CleaningFee).HasColumnType("decimal(18,2)");
                 entity.Property(e => e.AmenitiesUpCharge).HasColumnType("decimal(18,2)");
                 entity.Property(e => e.PriceForPeriod).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.ServiceFee).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.TaxAmount).HasColumnType("decimal(18,2)");
 
                 // Relationship: Booking -> Property
                 entity.HasOne(e => e.Property)
@@ -105,11 +113,20 @@ namespace Booking.Infrastructure.Persistence
                 entity.Property(e => e.Rating).IsRequired();
                 entity.Property(e => e.Comment);
 
+                // One review per booking (prevents duplicates at the DB level)
+                entity.HasIndex(e => e.BookingId).IsUnique();
+
                 // Relationship: Review -> Booking
                 entity.HasOne(e => e.Bookings)
                     .WithMany(b => b.Reviews)
                     .HasForeignKey(e => e.BookingId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                // Relationship: Review -> Property (direct link)
+                entity.HasOne(e => e.Property)
+                    .WithMany(p => p.Reviews)
+                    .HasForeignKey(e => e.PropertyId)
+                    .OnDelete(DeleteBehavior.NoAction);
 
                 // Relationship: Review -> Guest (User)
                 entity.HasOne(e => e.Guest)

@@ -51,6 +51,11 @@ namespace Booking.Application.Features.Properties.Update
             property.MaxStayNights = request.MaxStayNights;
             property.IsActive = request.IsActive;
             property.IsApproved = request.IsApproved;
+            property.CleaningFee = request.CleaningFee;
+            property.ExtraGuestFeePerNight = request.ExtraGuestFeePerNight;
+            property.BaseGuestsIncluded = request.BaseGuestsIncluded;
+            property.ServiceFeePercent = request.ServiceFeePercent;
+            property.TaxPercent = request.TaxPercent;
             property.LastModifiedAt = DateTime.UtcNow;
 
             // Replace amenities

@@ -23,18 +23,25 @@ namespace Booking.Application.Features.Properties.GetById
                 .Include(p => p.Address)
                 .Include(p => p.Amenities)
                 .Include(p => p.Photos)
-                .Include(p => p.Bookings)
-                    .ThenInclude(b => b.Reviews)
+                .Include(p => p.Reviews)
+                    .ThenInclude(r => r.Guest)
                 .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
 
             if (property == null)
                 throw new KeyNotFoundException($"Property with id {request.Id} not found.");
 
-            var allReviews = property.Bookings.SelectMany(b => b.Reviews).ToList();
-            double? avgRating = allReviews.Any() ? allReviews.Average(r => r.Rating) : null;
-
             var amenityNames = property.Amenities.Select(a => a.Name).ToList();
             var photoUrls = property.Photos.OrderBy(p => p.DisplayOrder).Select(p => p.Url).ToList();
+            var reviews = property.Reviews
+                .OrderByDescending(r => r.CreatedAt)
+                .Select(r => new PropertyReviewDto
+                {
+                    Id = r.Id,
+                    GuestFullName = $"{r.Guest.FirstName} {r.Guest.LastName}",
+                    Rating = r.Rating,
+                    Comment = r.Comment,
+                    CreatedAt = r.CreatedAt
+                }).ToList();
 
             return new GetPropertyByIdDto
             {
@@ -58,7 +65,13 @@ namespace Booking.Application.Features.Properties.GetById
                 AddressStreet = property.Address?.Street,
                 AmenityNames = amenityNames,
                 PhotoUrls = photoUrls,
-                AverageRating = avgRating
+                AverageRating = property.AverageRating,
+                Reviews = reviews,
+                CleaningFee = property.CleaningFee,
+                ExtraGuestFeePerNight = property.ExtraGuestFeePerNight,
+                BaseGuestsIncluded = property.BaseGuestsIncluded,
+                ServiceFeePercent = property.ServiceFeePercent,
+                TaxPercent = property.TaxPercent
             };
         }
     }
