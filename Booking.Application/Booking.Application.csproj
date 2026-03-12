@@ -20,6 +20,8 @@
     <Folder Include="Features\Bookings\Commands\" />
     <Folder Include="Features\Bookings\Queries\" />
     <Folder Include="Features\Properties\" />
+    <Folder Include="Features\Reviews\Commands\" />
+    <Folder Include="Features\Reviews\Queries\" />
   </ItemGroup>
 
 </Project>

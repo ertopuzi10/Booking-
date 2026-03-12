@@ -31,9 +31,8 @@ namespace Booking.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id }, new { id });
         }
 
-        /// <summary>
-        /// Get details of a specific booking. Accessible by the guest or property owner.
-        /// </summary>
+
+        // Get details of a specific booking. Accessible by the guest or property owner.
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
